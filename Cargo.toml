@@ -1,0 +1,9 @@
+[package]
+name = "laminafs"
+version = "0.1.0"
+authors = ["Brett Lajzer <brett@brettlajzer.com>"]
+edition = "2018"
+
+[dependencies]
+laminafs-sys = { path = "../laminafs-sys" }
+bitflags = "1.0"

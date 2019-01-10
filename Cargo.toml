@@ -5,5 +5,5 @@ authors = ["Brett Lajzer <brett@brettlajzer.com>"]
 edition = "2018"
 
 [dependencies]
-laminafs-sys = { path = "../laminafs-sys" }
+laminafs-sys = { path = "laminafs-sys/" }
 bitflags = "1.0"

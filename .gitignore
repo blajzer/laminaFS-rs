@@ -1,1 +1,3 @@
 target/
+laminafs-sys/src/lib.rs
+Cargo.lock

@@ -20,5 +20,5 @@ fn main() {
 		.opaque_type("void")
 		.generate().unwrap();
 
-	bindings.write_to_file("src/lib.rs");
+	bindings.write_to_file("src/laminafs_sys.rs");
 }

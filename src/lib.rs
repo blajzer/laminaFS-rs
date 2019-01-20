@@ -1,6 +1,29 @@
+/*
+Copyright (c) 2019 Brett Lajzer
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 #[macro_use]
 extern crate bitflags;
-extern crate laminafs_sys;
+
+mod laminafs_sys;
 
 use std::ffi::CString;
 use std::ptr::NonNull;
@@ -19,6 +42,35 @@ pub enum ResultCode {
 	GenericError
 }
 
+impl ResultCode {
+	fn to_lamina(&self) -> laminafs_sys::lfs_error_code_t {
+		match &self {
+			ResultCode::Ok => laminafs_sys::lfs_error_code_t_LFS_OK,
+			ResultCode::NotFound => laminafs_sys::lfs_error_code_t_LFS_NOT_FOUND,
+			ResultCode::InvalidDevice => laminafs_sys::lfs_error_code_t_LFS_INVALID_DEVICE,
+			ResultCode::AlreadyExists => laminafs_sys::lfs_error_code_t_LFS_ALREADY_EXISTS,
+			ResultCode::OutOfSpace => laminafs_sys::lfs_error_code_t_LFS_OUT_OF_SPACE ,
+			ResultCode::PermissionsError => laminafs_sys::lfs_error_code_t_LFS_PERMISSIONS_ERROR,
+			ResultCode::Unsupported => laminafs_sys::lfs_error_code_t_LFS_UNSUPPORTED,
+			ResultCode::GenericError => laminafs_sys::lfs_error_code_t_LFS_GENERIC_ERROR
+		}
+	}
+
+	fn from_lamina(error: laminafs_sys::lfs_error_code_t) -> ResultCode {
+		match error {
+			laminafs_sys::lfs_error_code_t_LFS_ALREADY_EXISTS => ResultCode::AlreadyExists,
+			laminafs_sys::lfs_error_code_t_LFS_GENERIC_ERROR => ResultCode::GenericError,
+			laminafs_sys::lfs_error_code_t_LFS_INVALID_DEVICE => ResultCode::InvalidDevice,
+			laminafs_sys::lfs_error_code_t_LFS_NOT_FOUND => ResultCode::NotFound,
+			laminafs_sys::lfs_error_code_t_LFS_OK => ResultCode::Ok,
+			laminafs_sys::lfs_error_code_t_LFS_OUT_OF_SPACE => ResultCode::OutOfSpace,
+			laminafs_sys::lfs_error_code_t_LFS_PERMISSIONS_ERROR => ResultCode::PermissionsError,
+			laminafs_sys::lfs_error_code_t_LFS_UNSUPPORTED => ResultCode::Unsupported,
+			_ => panic!("Unexpected error code from Lamina {}", error)
+		}
+	}
+}
+
 bitflags! {
 	pub struct MountPermissions: u32 {
 		const All = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_ALL_PERMISSIONS;
@@ -31,21 +83,6 @@ bitflags! {
 		const WriteFile = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_WRITE_FILE;
 	}
 }
-
-fn lfs_error_to_rust(error: laminafs_sys::lfs_error_code_t) -> ResultCode {
-	match error {
-		laminafs_sys::lfs_error_code_t_LFS_ALREADY_EXISTS => ResultCode::AlreadyExists,
-		laminafs_sys::lfs_error_code_t_LFS_GENERIC_ERROR => ResultCode::GenericError,
-		laminafs_sys::lfs_error_code_t_LFS_INVALID_DEVICE => ResultCode::InvalidDevice,
-		laminafs_sys::lfs_error_code_t_LFS_NOT_FOUND => ResultCode::NotFound,
-		laminafs_sys::lfs_error_code_t_LFS_OK => ResultCode::Ok,
-		laminafs_sys::lfs_error_code_t_LFS_OUT_OF_SPACE => ResultCode::OutOfSpace,
-		laminafs_sys::lfs_error_code_t_LFS_PERMISSIONS_ERROR => ResultCode::PermissionsError,
-		laminafs_sys::lfs_error_code_t_LFS_UNSUPPORTED => ResultCode::Unsupported,
-		_ => panic!("Unexpected error code from Lamina {}", error)
-	}
-}
-
 
 pub struct LaminaFS {
 	context: laminafs_sys::lfs_context_t
@@ -86,7 +123,7 @@ impl LaminaFS {
 				context: self.context
 			})
 		} else {
-			Err(lfs_error_to_rust(result_code))
+			Err(ResultCode::from_lamina(result_code))
 		}
 	}
 
@@ -314,7 +351,7 @@ impl WorkItem {
 
 	pub fn get_result(&mut self) -> ResultCode {
 		self.wait();
-		lfs_error_to_rust(unsafe { laminafs_sys::lfs_work_item_get_result(self.work_item.ptr.as_ptr()) })
+		ResultCode::from_lamina(unsafe { laminafs_sys::lfs_work_item_get_result(self.work_item.ptr.as_ptr()) })
 	}
 
 	pub fn get_bytes(&mut self) -> usize {
@@ -346,6 +383,35 @@ impl Drop for WorkItem {
 		unsafe { laminafs_sys::lfs_release_work_item(self.context, self.work_item.ptr.as_ptr()); }
 	}
 }
+
+/*
+struct lfs_device_interface_t {
+	// required
+	lfs_device_create_func_t _create;
+	lfs_device_destroy_func_t _destroy;
+
+	lfs_device_file_exists_func_t _fileExists;
+	lfs_device_file_size_func_t _fileSize;
+	lfs_device_read_file_func_t _readFile;
+
+	// optional
+	lfs_device_write_file_func_t _writeFile;
+	lfs_device_delete_file_func_t _deleteFile;
+	lfs_device_create_dir_func_t _createDir;
+	lfs_device_delete_dir_func_t _deleteDir;
+};
+*/
+//typedef enum lfs_error_code_t (*lfs_device_create_func_t)(struct lfs_allocator_t *, const char *, void **);
+
+pub struct DeviceInterface {
+	create_func: Fn(&str) -> ResultCode
+}
+
+impl DeviceInterface {
+
+}
+
+
 
 #[cfg(test)]
 mod tests {

@@ -1,3 +1,6 @@
 [submodule "laminafs-sys/vendor/laminaFS"]
 	path = laminafs-sys/vendor/laminaFS
 	url = https://github.com/blajzer/laminaFS.git
+[submodule "vendor/laminaFS"]
+	path = vendor/laminaFS
+	url = https://github.com/blajzer/laminaFS.git

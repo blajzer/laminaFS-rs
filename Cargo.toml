@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Brett Lajzer <brett@brettlajzer.com>"]
 edition = "2018"
 
+[build-dependencies]
+bindgen = "0.46.0"
+cc = "1.0.28"
+
 [dependencies]
-laminafs-sys = { path = "laminafs-sys/" }
 bitflags = "1.0"

@@ -73,14 +73,14 @@ impl ResultCode {
 
 bitflags! {
 	pub struct MountPermissions: u32 {
-		const All = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_ALL_PERMISSIONS;
-		const CreateDir = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_CREATE_DIR;
-		const Default = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_DEFAULT;
-		const DeleteDir = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_DELETE_DIR;
-		const DeleteFile = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_DELETE_FILE;
-		const Read = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_READ;
-		const Write = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_WRITE;
-		const WriteFile = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_WRITE_FILE;
+		const All = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_ALL_PERMISSIONS as u32;
+		const CreateDir = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_CREATE_DIR as u32;
+		const Default = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_DEFAULT as u32;
+		const DeleteDir = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_DELETE_DIR as u32;
+		const DeleteFile = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_DELETE_FILE as u32;
+		const Read = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_READ as u32;
+		const Write = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_WRITE as u32;
+		const WriteFile = laminafs_sys::lfs_mount_permissions_t_LFS_MOUNT_WRITE_FILE as u32;
 	}
 }
 
